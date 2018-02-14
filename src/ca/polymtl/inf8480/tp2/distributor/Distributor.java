@@ -79,6 +79,7 @@ public class Distributor {
 	 * Effectue le calcul a partir du fichier donné
 	 */
 	private void compute(String path) {
-
+		int sum = 0;
+		System.out.println(sum);
 	}
 }
