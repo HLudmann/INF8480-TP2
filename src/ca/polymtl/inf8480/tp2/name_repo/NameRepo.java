@@ -17,21 +17,38 @@ public class NameRepo implements NameRepoInterface {
 
     }
 
+    private ComputeServerInterface loadServerStub(String hostname) {
+        ComputeServerInterface stub = null;
+
+        try {
+            Registry registry = LocateRegistry.getRegistry(hostname);
+            stub = (ComputeServerInterface) registry.lookup(hostname);
+        } catch (NotBoundException e) {
+            System.out.println("Erreur: Le nom '" + e.getMessage() + "' n'est pas défini dans le registre.");
+        } catch (AccessException e) {
+            System.out.println("Erreur: " + e.getMessage());
+        } catch (RemoteException e) {
+            System.out.println("Erreur: " + e.getMessage());
+        }
+        return stub;
+    }
+
     private void checkServers() {
         Results res = new Results();
         Path path = Paths.get("all_server_names");
         List<String> servers = Files.readAllLines(path);
         List<String> available = new ArrayList<String>();
-        
+
         // TODO : test des serveurs/registres RMI
-        for (String s : servers {
+        for (String s : servers) {
             // Test connexion serveur
-            if ("server dispo" == true) {
+            ComputeServerInterface stub = loadServerStub(s);
+            if (stub.myLoockup()) {
                 available.add(s);
             }
         }
         path = Paths.get("available_servers");
-        Files.write(path, available, StandardCharsets.UTF_8, StandardOpenOption.CREATE)
+        Files.write(path, available, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
     }
 
     @Override
@@ -40,7 +57,7 @@ public class NameRepo implements NameRepoInterface {
         Path path = Paths.get("users");
         List<String> users = Files.readAllLines(path);
         for (int i = 0; i < users.size(); i = i + 2) {
-            if  (users.get(i).contentEquals("uid=" + username)) & (user.get(i + 1).contains("pwd=" + password)) {
+            if (users.get(i).contentEquals("uid=" + username) & (user.get(i + 1).contains("pwd=" + password))) {
                 res.setIsSuccess(true);
             }
         }

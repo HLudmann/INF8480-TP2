@@ -43,7 +43,7 @@ public class Distributor {
 
 		try {
 			Registry registry = LocateRegistry.getRegistry(hostname);
-			stub = (ServerInterface) registry.lookup("server");
+			stub = (ServerInterface) registry.lookup(hostname);
 		} catch (NotBoundException e) {
 			System.out.println("Erreur: Le nom '" + e.getMessage() + "' n'est pas défini dans le registre.");
 		} catch (AccessException e) {
@@ -58,7 +58,7 @@ public class Distributor {
 	 * Connexion au server de noms
 	 */
 	private void login() {
-
+		stub.lookup();
 	}
 
 	/*
