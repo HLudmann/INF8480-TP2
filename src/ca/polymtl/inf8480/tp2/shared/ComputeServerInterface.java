@@ -1,8 +1,8 @@
 package ca.polymtl.inf8480.tp2.shared;
 
+import java.rmi.Remote;
 import java.rmi.RemoteException;
-
-import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
+import java.util.ArrayList;
 
 /**
  * ComputeServerInterface

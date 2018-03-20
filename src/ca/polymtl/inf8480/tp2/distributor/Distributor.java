@@ -1,16 +1,19 @@
 package ca.polymtl.inf8480.tp2.distributor;
 
 import ca.polymtl.inf8480.tp2.shared.*;
-import sun.reflect.generics.tree.VoidDescriptor;
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UID;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Scanner;
-
-import com.sun.tools.corba.se.idl.constExpr.BooleanNot;
-import com.sun.tools.internal.ws.wsdl.document.jaxws.Exception;
 
 public class Distributor {
 
@@ -49,7 +52,6 @@ public class Distributor {
 	private ArrayList<ComputeServerInterface> stubs;
 	private ArrayList<Integer> pellList = null;
 	private ArrayList<Integer> primeList = null;
-	private boolean secureMode = false;
 
 	public Distributor(String hostname, String filePath, boolean insecure) {
 		super();
@@ -60,33 +62,42 @@ public class Distributor {
 
 		nameRepoStub = loadNameRepoStub(hostname);
 		this.insecure = insecure;
-		Path path = Pahts.get(filePath);
+		Path path = Paths.get(filePath);
 		//step1: Open and read the file
-		for (String line : Files.readAllLines(path)) {
-			String[] split = line.split(" ");
-			if (split[0].compareTo("pell")) {
-				pellList.add(Integer.parseInt(split[1]));
-			} else if (split[0].compareTo("prime")) {
-				primeList.add(Integer.parseInt(split[1]));
+		try {
+			for (String line : Files.readAllLines(path)) {
+				String[] split = line.split(" ");
+				if (split[0].compareTo("pell") == 0) {
+					pellList.add(Integer.parseInt(split[1]));
+				} else if (split[0].compareTo("prime") == 0) {
+					primeList.add(Integer.parseInt(split[1]));
+				}
 			}
+		} catch (Exception e) {
+			System.out.println("Erreur: " + e.getMessage());
 		}
 	}
 
 	private void run() {
-		login();
-		if (insecure) {
-			computeInsecure();
-		} else {
-			computeSecure();
+		try {
+			login();
+			if (insecure) {
+				computeInsecure();
+			} else {
+				computeSecure();
+			}
+		} catch (Exception e) {
+			System.out.println("Erreur: " + e.getMessage());
 		}
+
 	}
 
 	private NameRepoInterface loadNameRepoStub(String hostname) {
-		ServerInterface stub = null;
+		NameRepoInterface stub = null;
 
 		try {
 			Registry registry = LocateRegistry.getRegistry(hostname);
-			stub = (ServerInterface) registry.lookup("NameRepo04");
+			stub = (NameRepoInterface) registry.lookup("NameRepo04");
 		} catch (NotBoundException e) {
 			System.out.println("Erreur: Le nom '" + e.getMessage() + "' n'est pas défini dans le registre.");
 		} catch (AccessException e) {
@@ -98,11 +109,11 @@ public class Distributor {
 	}
 
 	private ComputeServerInterface loadComputeServerStub(String hostname) {
-		ServerInterface stub = null;
+		ComputeServerInterface stub = null;
 
 		try {
 			Registry registry = LocateRegistry.getRegistry(hostname);
-			stub = (ServerInterface) registry.lookup("ComputeServeur04");
+			stub = (ComputeServerInterface) registry.lookup("ComputeServeur04");
 		} catch (NotBoundException e) {
 			System.out.println("Erreur: Le nom '" + e.getMessage() + "' n'est pas défini dans le registre.");
 		} catch (AccessException e) {
@@ -116,8 +127,8 @@ public class Distributor {
 	/*
 	 * Connexion au server de noms
 	 */
-	private void login() {
-		nameRepoStub.lookup();
+	private void login() throws Exception {
+		nameRepoStub.myLookup();
 		Scanner login = new Scanner(System.in);
 		System.out.println("Enter your username: ");
 		String username = login.next();
@@ -136,8 +147,8 @@ public class Distributor {
 	/*
 	 * Demande la liste des serveurs de calculs disponibles
 	 */
-	private void listAvailableServers() {
-		Results res = stub.listAvailableServers(token);
+	private void listAvailableServers() throws Exception {
+		Results res = nameRepoStub.listAvailableServers(token);
 		System.out.println(res.getAvailableServers());
 		stubs = new ArrayList<ComputeServerInterface>();
 		ComputeServerInterface stub;
@@ -150,7 +161,7 @@ public class Distributor {
 	/*
 	 * Effectue le calcul a partir du fichier donné. En mode securise.
 	 */
-	private void computeSecure() {
+	private void computeSecure() throws Exception {
 
 		int sum = 0;
 		ArrayList<Ops> opList = new ArrayList<Ops>();
@@ -165,8 +176,8 @@ public class Distributor {
 				//step3 send the correct amount of blocks from the file (will have to be done in separate threads)
 				res = new Results();
 				int ops = capacity;
-				ArrayList<Integer> pells;
-				ArrayList<Integer> primes;
+				ArrayList<Integer> pells = new ArrayList<Integer>();
+				ArrayList<Integer> primes = new ArrayList<Integer>();
 				int i = 0;
 				while (!pellList.isEmpty() && i < Math.ceil((double) ops / 2)) {
 					pells.add(pellList.remove(0));
@@ -182,9 +193,9 @@ public class Distributor {
 				op.start();
 				opList.add(op);
 			}
-			for (Ops o : opList) {
+			for (Ops op : opList) {
 				op.join(5000);
-				res = op.getRes();
+				Results res = op.getRes();
 				if (res.getIsSuccess()) {
 					//step4 Add the result to the sum
 					sum += res.getResult() % 4000;
@@ -202,10 +213,10 @@ public class Distributor {
 	/*
 	 * Effectue le calcul a partir du fichier donné. En mode non securise.
 	 */
-	private void computeInsecure() {
+	private void computeInsecure() throws Exception {
 
 		int sum = 0;
-		ArrayList<Ops[]> opList = new ArrayList<Ops>();
+		ArrayList<Ops[]> opList = new ArrayList<Ops[]>();
 
 		while (!pellList.isEmpty() && !primeList.isEmpty()) {
 			listAvailableServers();
@@ -215,12 +226,18 @@ public class Distributor {
 			//beginning of a loop that calls all servers in succession
 			for (int k = 0; k < stubs.size(); k += 3) {
 				//step2 Check with the server[i] how many computing blocks they can take
-				Results res = stub.getCapacity();
-				int capacity = res.getCapacity();
+				ComputeServerInterface stub0 = stubs.get(k);
+				ComputeServerInterface stub1 = stubs.get(k + 1);
+				ComputeServerInterface stub2 = stubs.get(k + 2);
+
+				Results res0 = stub0.getCapacity();
+				Results res1 = stub1.getCapacity();
+				Results res2 = stub2.getCapacity();
+				int capacity = Math.min(Math.min(res0.getCapacity(), res1.getCapacity()), res2.getCapacity());
 				//step3 send the correct amount of blocks from the file (will have to be done in separate threads)
 				int ops = capacity;
-				ArrayList<Integer> pells;
-				ArrayList<Integer> primes;
+				ArrayList<Integer> pells = new ArrayList<Integer>();
+				ArrayList<Integer> primes = new ArrayList<Integer>();
 				int i = 0;
 				while (!pellList.isEmpty() && i < Math.ceil((double) ops / 2)) {
 					pells.add(pellList.remove(0));
@@ -238,7 +255,7 @@ public class Distributor {
 				op0.start();
 				op1.start();
 				op2.start();
-				opList.add(new Ops[] { op1, op2, op3 });
+				opList.add(new Ops[] { op0, op1, op2 });
 			}
 			for (Ops[] op : opList) {
 				op[0].join(5000);

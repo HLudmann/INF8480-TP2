@@ -18,7 +18,7 @@ public class Results extends Object implements Serializable {
     private List<String> availableServers = null;
     private int result = -1;
     private UID token = null;
-    private int capacity = null;
+    private int capacity = -1;
     private ArrayList<Integer> pells = null;
     private ArrayList<Integer> primes = null;
 

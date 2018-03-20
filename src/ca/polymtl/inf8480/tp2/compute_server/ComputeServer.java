@@ -1,18 +1,22 @@
 package ca.polymtl.inf8480.tp2.compute_server;
 
+import java.rmi.ConnectException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.RemoteException;
-
-import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
+import java.rmi.server.UID;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 
 import ca.polymtl.inf8480.tp2.shared.*;
 
 public class ComputeServer implements ComputeServerInterface {
 
-	private int fiability = null;
-	private int capacity = null;
+	private int fiability;
+	private int capacity;
 
 	public static void main(String[] args) {
-		Distributor server = new Distributor();
+		ComputeServer server = new ComputeServer();
 		server.run();
 	}
 
@@ -26,7 +30,7 @@ public class ComputeServer implements ComputeServerInterface {
 		}
 
 		try {
-			DistributorInterface stub = (DistributorInterface) UnicastRemoteObject.exportObject(this, 0);
+			ComputeServerInterface stub = (ComputeServerInterface) UnicastRemoteObject.exportObject(this, 0);
 
 			Registry registry = LocateRegistry.getRegistry();
 			registry.rebind("ComputeServeur04", stub);
@@ -51,7 +55,9 @@ public class ComputeServer implements ComputeServerInterface {
 
 	@Override
 	public Results getCapacity() throws RemoteException {
-		return capacity;
+		Results res = new Results();
+		res.setCapacity(capacity);
+		return res;
 	}
 
 	@Override
@@ -61,7 +67,7 @@ public class ComputeServer implements ComputeServerInterface {
 		int sum = 0;
 
 		//test de la capacité
-		if (isOperationAccepted(pells.size() + prime.size()) == false) {
+		if (isOperationAccepted(pells.size() + primes.size()) == false) {
 			return res;
 		}
 
@@ -83,7 +89,7 @@ public class ComputeServer implements ComputeServerInterface {
 		else
 			res.setResult((int) Math.ceil(Math.random() * 4000));
 
-		res.setIsSucess(true);
+		res.setIsSuccess(true);
 		return res;
 	}
 
@@ -95,11 +101,12 @@ public class ComputeServer implements ComputeServerInterface {
 		return Operations.prime(x);
 	}
 
-	private boolean isOperationAccepted(int operationsQuantity)throws RemoteException {
+	private boolean isOperationAccepted(int operationsQuantity) throws RemoteException {
 		//tests if a random number from 0 to 100 is smaller than the given equation to simulate refusal probability
-		if((int) Math.ceil(Math.random() * 100) <= ((operationsQuantity-Capacity)/(5*Capacity)*100);
+		if ((int) Math.ceil(Math.random() * 100) <= ((operationsQuantity - capacity) / (5 * capacity) * 100)) {
 			return true;
-		else
+		} else {
 			return false;
+		}
 	}
 }
