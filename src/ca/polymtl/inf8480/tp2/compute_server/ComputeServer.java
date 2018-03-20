@@ -16,12 +16,32 @@ public class ComputeServer implements ComputeServerInterface {
 	private int capacity;
 
 	public static void main(String[] args) {
-		ComputeServer server = new ComputeServer();
-		server.run();
+		if (args.length == 0 && args[0].compareTo("help") != 0) {
+			ComputeServer server = new ComputeServer(1, 100);
+			server.run();
+		} else if (args.length == 1) {
+			int capacity = Integer.parseInt(args[0]);
+			ComputeServer server = new ComputeServer(capacity, 100);
+			server.run();
+		} else if (args.length == 2) {
+			int capacity = Integer.parseInt(args[0]);
+			int fiability = Integer.parseInt(args[2]);
+			ComputeServer server = new ComputeServer(capacity, fiability);
+			server.run();
+		} else {
+			System.out.println("Erreur : command non reconnue.");
+			System.out.println("Commandes valides :");
+			System.out.println("./compute_server [capacity [fiability]]");
+			System.out.println("	- help : display this.");
+		}
+
 	}
 
-	public ComputeServer() {
+	public ComputeServer(int capacity, int fiability) {
 		super();
+		this.capacity = capacity;
+		this.fiability = fiability;
+
 	}
 
 	private void run() {
