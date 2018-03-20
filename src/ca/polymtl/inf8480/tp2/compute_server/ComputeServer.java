@@ -8,6 +8,8 @@ import ca.polymtl.inf8480.tp2.shared.*;
 
 public class ComputeServer implements ComputeServerInterface {
 
+	private int fiability = 100;
+
 	public static void main(String[] args) {
 		Distributor server = new Distributor();
 		server.run();
@@ -53,11 +55,24 @@ public class ComputeServer implements ComputeServerInterface {
 
 	@Override
 	public Results computePrime(int x) throws RemoteException {
-		return Operations.prime(x);
+		if((int) Math.ceil(Math.random() * 100) <= m)
+			return Operations.prime(x);
+		else
+			return (int) Math.ceil(Math.random() * 4000);
 	}
 
 	@Override
 	public Results computePell(int x) throws RemoteException {
-		return Operations.pell(x);
+		if((int) Math.ceil(Math.random() * 100) <= m)
+			return Operations.pell(x);
+		else
+			return (int) Math.ceil(Math.random() * 4000);
 	}
+
+	@Override
+	public boolean setFiability(int m) throws RemoteException {
+		this.fiability = m;
+		return true;
+	}
+
 }

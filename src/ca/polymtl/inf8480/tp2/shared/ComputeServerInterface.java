@@ -11,6 +11,8 @@ public interface ComputeServerInterface extends Remote {
 
     boolean myLookup() throws RemoteException;
 
+    boolean setFiability(int m) throws RemoteException;
+
     Results capacities() throws RemoteException;
 
     Results computePrime(int x) throws RemoteException;
