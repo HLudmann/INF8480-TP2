@@ -11,7 +11,7 @@ public interface ComputeServerInterface extends Remote {
 
     boolean myLookup() throws RemoteException;
 
-    Results capacities() throws RemoteException;
+    Results getCapacity() throws RemoteException;
 
-    Results compute(int[] pells, int[] primes) throws RemoteException;
+    Results compute(ArrayList<Integer> pells, ArrayList<Integer> primes) throws RemoteException;
 }
