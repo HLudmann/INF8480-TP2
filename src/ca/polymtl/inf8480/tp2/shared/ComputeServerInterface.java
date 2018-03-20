@@ -9,7 +9,7 @@ import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
  */
 public interface ComputeServerInterface extends Remote {
 
-    Results myLookup() throws RemoteException;
+    boolean myLookup() throws RemoteException;
 
     Results capacities() throws RemoteException;
 

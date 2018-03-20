@@ -17,6 +17,7 @@ public class Results extends Object implements Serializable {
     private List<String> availableServers = null;
     private int result = null;
     private String err = null;
+    private int capacity = null;
 
     public Results() {
     }
@@ -41,7 +42,12 @@ public class Results extends Object implements Serializable {
     public void setResult(int result) {
         this.result = result;
     }
-
+    /**
+     * @param result the capacity to set
+     */
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
     /**
      * @param err the err to set
      */
@@ -54,6 +60,12 @@ public class Results extends Object implements Serializable {
      */
     public boolean getIsSuccess() {
         return isSuccess;
+    }
+    /**
+     * @param result the capacity to set
+     */
+    public void getCapacity() {
+       return(capacity);
     }
 
     /**

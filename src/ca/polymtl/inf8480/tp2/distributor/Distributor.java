@@ -2,6 +2,7 @@ package ca.polymtl.inf8480.tp2.distributor;
 
 import ca.polymtl.inf8480.tp2.shared.*;
 import sun.reflect.generics.tree.VoidDescriptor;
+import java.io.*;
 
 public class Distributor {
 	public static void main(String[] args) {
@@ -21,6 +22,8 @@ public class Distributor {
 	private Path rootPath = Paths.get(System.getenv("HOME") + "/");
 	private String fun;
 	private String arg;
+	private Undefined[] availableServers;
+	private String[][] operations = null;
 
 	public Distributor(...) {
 		super();
@@ -65,7 +68,8 @@ public class Distributor {
 	 * Demande la liste des serveurs de calculs disponibles
 	 */
 	private void listAvailableServers() {
-
+		Results res = stub.listAvailableServers();
+		System.out.println(res.availableServers);
 	}
 
 	/*
@@ -80,6 +84,31 @@ public class Distributor {
 	 */
 	private void compute(String path) {
 		int sum = 0;
+
+		//step1: Open and read the file
+
+
+		//beginning of a loop that calls all servers in succession
+		(for int i=0; i<availableServers.length(); i++ ){
+			//step2 Check with the server[i] how many computing blocks they can take
+			Results res = availableServers[i].capacities();
+			int capacity = res.getCapacity();
+			//step3 send the correct amount of blocks from the file (will have to be done in separate threads)
+			//?? should we make operations successively or send them all in one call??
+			operations = null;
+			for(int j = 0; j<= capacity; j++){
+				//read the file and add the operations to the operations[][]
+			}
+			//send the operations to the server
+			Results res = availableServer[i].compute(operations);
+			//step4 Add the result to the sum
+			sum += res.getResult();
+		}
+
+
+		//step5 verifiy that the file is read fully and that all the sums have been added...
 		System.out.println(sum);
 	}
+
+	
 }
