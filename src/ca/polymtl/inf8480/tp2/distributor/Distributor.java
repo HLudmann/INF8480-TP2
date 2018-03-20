@@ -24,6 +24,7 @@ public class Distributor {
 	private String arg;
 	private Undefined[] availableServers;
 	private String[][] operations = null;
+	private boolean secureMode = false;
 
 	public Distributor(...) {
 		super();
@@ -62,6 +63,20 @@ public class Distributor {
 	 */
 	private void login() {
 		stub.lookup();
+	}
+
+	/*
+	 * Passage à mode sécurisé
+	 */
+	private void setSecureMode() {
+		secureMode = true;
+	}
+
+	/*
+	 * Passage à mode non-sécurisé
+	 */
+	private void setNonSecureMode() {
+		secureMode = false;
 	}
 
 	/*
