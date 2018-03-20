@@ -8,5 +8,5 @@ public interface NameRepoInterface extends Remote {
 
 	Results login(String username, String password) throws RemoteException;
 
-	Results listAvailableServers() throws RemoteException;
+	Results listAvailableServers(UID token) throws RemoteException;
 }

@@ -1,6 +1,7 @@
 package ca.polymtl.inf8480.tp2.shared;
 
 import java.io.Serializable;
+import java.rmi.server.UID;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,8 +17,10 @@ public class Results extends Object implements Serializable {
     private boolean isSuccess = false;
     private List<String> availableServers = null;
     private int result = null;
-    private String err = null;
+    private UID token = null;
     private int capacity = null;
+    private int[] pells = null;
+    private int[] primes = null;
 
     public Results() {
     }
@@ -42,17 +45,33 @@ public class Results extends Object implements Serializable {
     public void setResult(int result) {
         this.result = result;
     }
+
     /**
-     * @param result the capacity to set
+     * @param capacity the capacity to set
      */
     public void setCapacity(int capacity) {
         this.capacity = capacity;
     }
+
     /**
-     * @param err the err to set
+     * @param token the token to set
      */
-    public void setErr(String err) {
-        this.err = err;
+    public void setToken(UID token) {
+        this.token = token;
+    }
+
+    /**
+     * @param pells the pells to set
+     */
+    public void setPells(int[] pells) {
+        this.pells = pells;
+    }
+
+    /**
+     * @param primes the primes to set
+     */
+    public void setPrimes(int[] primes) {
+        this.primes = primes;
     }
 
     /**
@@ -61,11 +80,12 @@ public class Results extends Object implements Serializable {
     public boolean getIsSuccess() {
         return isSuccess;
     }
+
     /**
      * @param result the capacity to set
      */
-    public void getCapacity() {
-       return(capacity);
+    public int getCapacity() {
+        return capacity;
     }
 
     /**
@@ -83,9 +103,23 @@ public class Results extends Object implements Serializable {
     }
 
     /**
-     * @return the err
+     * @return the token
      */
-    public String getErr() {
-        return err;
+    public UID getToken() {
+        return token;
+    }
+
+    /**
+     * @return the pells
+     */
+    public int[] getPells() {
+        return pells;
+    }
+
+    /**
+     * @return the primes
+     */
+    public int[] getPrimes() {
+        return primes;
     }
 }

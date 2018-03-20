@@ -13,7 +13,5 @@ public interface ComputeServerInterface extends Remote {
 
     Results capacities() throws RemoteException;
 
-    Results computePrime(int x) throws RemoteException;
-
-    Results computePell(int x) throws RemoteException;
+    Results compute(int[] pells, int[] primes) throws RemoteException;
 }
