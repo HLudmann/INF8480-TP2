@@ -16,11 +16,11 @@ public class Results extends Object implements Serializable {
 
     private boolean isSuccess = false;
     private List<String> availableServers = null;
-    private int result = null;
+    private int result = -1;
     private UID token = null;
     private int capacity = null;
-    private int[] pells = null;
-    private int[] primes = null;
+    private ArrayList<Integer> pells = null;
+    private ArrayList<Integer> primes = null;
 
     public Results() {
     }
@@ -63,14 +63,14 @@ public class Results extends Object implements Serializable {
     /**
      * @param pells the pells to set
      */
-    public void setPells(int[] pells) {
+    public void setPells(ArrayList<Integer> pells) {
         this.pells = pells;
     }
 
     /**
      * @param primes the primes to set
      */
-    public void setPrimes(int[] primes) {
+    public void setPrimes(ArrayList<Integer> primes) {
         this.primes = primes;
     }
 
@@ -112,14 +112,14 @@ public class Results extends Object implements Serializable {
     /**
      * @return the pells
      */
-    public int[] getPells() {
+    public ArrayList<Integer> getPells() {
         return pells;
     }
 
     /**
      * @return the primes
      */
-    public int[] getPrimes() {
+    public ArrayList<Integer> getPrimes() {
         return primes;
     }
 }

@@ -55,52 +55,49 @@ public class ComputeServer implements ComputeServerInterface {
 	}
 
 	@Override
-	public Results compute(int[] pells, int[] primes) throws RemoteException {
-		
-		Results res = new Results;
+	public Results compute(ArrayList<Integer> pells, ArrayList<Integer> primes) throws RemoteException {
+
+		Results res = new Results();
 		int sum = 0;
-		
+
 		//test de la capacité
-		if(isOperationAccepted(pells.lenght+prime.lenght)==false){
-			res.setIsSucess(false);
+		if (isOperationAccepted(pells.size() + prime.size()) == false) {
 			return res;
 		}
 
 		//calcul des pells et addition à la somme
 		for (int x : pells) {
-			sum+=(computePell(pells[x])%4000);
-			sum%=4000;
+			sum += (computePell(x) % 4000);
+			sum %= 4000;
 		}
 
 		//calcul des primes et addition à la somme
-		for (int x : prime) {
-			sum+=(computePrime(primes[x])%4000);
-			sum%=4000;
+		for (int x : primes) {
+			sum += (computePrime(x) % 4000);
+			sum %= 4000;
 		}
 
 		//vérification si le serveur est de mauvaise foi. Si le nombre généré est supérieur à la fiabilité il l'est.
-		if((int) Math.ceil(Math.random() * 100) <= fiability)
+		if ((int) Math.ceil(Math.random() * 100) <= fiability)
 			res.setResult(sum);
 		else
-			res.setResult((int) Math.ceil(Math.random() * 4000)
-		
+			res.setResult((int) Math.ceil(Math.random() * 4000));
+
 		res.setIsSucess(true);
 		return res;
 	}
 
-	
 	private int computePell(int x) throws RemoteException {
 		return Operations.pell(x);
 	}
 
-	
 	private int computePrime(int x) throws RemoteException {
 		return Operations.prime(x);
 	}
 
 	private boolean isOperationAccepted(int operationsQuantity)throws RemoteException {
 		//tests if a random number from 0 to 100 is smaller than the given equation to simulate refusal probability
-		if((int) Math.ceil(Math.random() * 100) <= ((operationsQuantity-Capacity)/(5*Capacity)*100)
+		if((int) Math.ceil(Math.random() * 100) <= ((operationsQuantity-Capacity)/(5*Capacity)*100);
 			return true;
 		else
 			return false;
