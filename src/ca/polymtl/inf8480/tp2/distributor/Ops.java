@@ -17,14 +17,16 @@ public class Ops extends Thread {
         this.stub = stub;
         this.pells = pells;
         this.primes = primes;
-        res.setPells(pells);
-        res.setPrimes(primes);
     }
 
     public void run() {
         try {
             res = stub.compute(pells, primes);
+			res.setPells(pells);
+			res.setPrimes(primes);
         } catch (Exception e) {
+			res.setPells(pells);
+			res.setPrimes(primes);
         }
     }
 

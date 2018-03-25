@@ -12,6 +12,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UID;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -50,8 +51,8 @@ public class Distributor {
 	private boolean insecure;
 	private UID token;
 	private ArrayList<ComputeServerInterface> stubs;
-	private ArrayList<Integer> pellList = null;
-	private ArrayList<Integer> primeList = null;
+	private ArrayList<Integer> pellList = new ArrayList<Integer>();
+	private ArrayList<Integer> primeList = new ArrayList<Integer>();
 
 	public Distributor(String hostname, String filePath, boolean insecure) {
 		super();
@@ -65,7 +66,8 @@ public class Distributor {
 		Path path = Paths.get(filePath);
 		//step1: Open and read the file
 		try {
-			for (String line : Files.readAllLines(path)) {
+			List<String> lines = Files.readAllLines(path);
+			for (String line : lines) {
 				String[] split = line.split(" ");
 				if (split[0].compareTo("pell") == 0) {
 					pellList.add(Integer.parseInt(split[1]));
@@ -96,7 +98,7 @@ public class Distributor {
 		NameRepoInterface stub = null;
 
 		try {
-			Registry registry = LocateRegistry.getRegistry(hostname);
+			Registry registry = LocateRegistry.getRegistry(hostname, 5044);
 			stub = (NameRepoInterface) registry.lookup("NameRepo04");
 		} catch (NotBoundException e) {
 			System.out.println("Erreur: Le nom '" + e.getMessage() + "' n'est pas défini dans le registre.");
@@ -112,8 +114,8 @@ public class Distributor {
 		ComputeServerInterface stub = null;
 
 		try {
-			Registry registry = LocateRegistry.getRegistry(hostname);
-			stub = (ComputeServerInterface) registry.lookup("ComputeServeur04");
+			Registry registry = LocateRegistry.getRegistry(hostname, 5040);
+			stub = (ComputeServerInterface) registry.lookup("ComputeServer04");
 		} catch (NotBoundException e) {
 			System.out.println("Erreur: Le nom '" + e.getMessage() + "' n'est pas défini dans le registre.");
 		} catch (AccessException e) {
@@ -139,6 +141,7 @@ public class Distributor {
 
 		if (res.getIsSuccess()) {
 			token = res.getToken();
+			System.out.println("Logged in");
 		} else {
 			throw new Exception("Wrong username and/or password");
 		}
@@ -149,7 +152,6 @@ public class Distributor {
 	 */
 	private void listAvailableServers() throws Exception {
 		Results res = nameRepoStub.listAvailableServers(token);
-		System.out.println(res.getAvailableServers());
 		stubs = new ArrayList<ComputeServerInterface>();
 		ComputeServerInterface stub;
 		for (String serv : res.getAvailableServers()) {
@@ -162,29 +164,39 @@ public class Distributor {
 	 * Effectue le calcul a partir du fichier donné. En mode securise.
 	 */
 	private void computeSecure() throws Exception {
-
+		System.out.println("Begin");
+		Results res = new Results();
 		int sum = 0;
 		ArrayList<Ops> opList = new ArrayList<Ops>();
-
-		while (!pellList.isEmpty() && !primeList.isEmpty()) {
+		try {
 			listAvailableServers();
+		} catch (Exception e) {
+			throw new Exception("1", e);
+		}
+		while (!pellList.isEmpty() || !primeList.isEmpty()) {
 			//beginning of a loop that calls all servers in succession
 			for (ComputeServerInterface stub : stubs) {
 				//step2 Check with the server[i] how many computing blocks they can take
-				Results res = stub.getCapacity();
-				int capacity = res.getCapacity();
+				int capacity = 0;
+				try {
+					res = stub.getCapacity();
+					capacity = res.getCapacity();
+				} catch (Exception e) {
+					throw new Exception("2", e);
+				}
+				System.err.println("ping2");
 				//step3 send the correct amount of blocks from the file (will have to be done in separate threads)
 				res = new Results();
-				int ops = capacity;
+				int nops = capacity;
 				ArrayList<Integer> pells = new ArrayList<Integer>();
 				ArrayList<Integer> primes = new ArrayList<Integer>();
 				int i = 0;
-				while (!pellList.isEmpty() && i < Math.ceil((double) ops / 2)) {
+				while (!pellList.isEmpty() && i < Math.ceil((double) nops / 2)) {
 					pells.add(pellList.remove(0));
 					i++;
 				}
 				i = 0;
-				while (!primeList.isEmpty() && i < Math.floor((double) ops / 2)) {
+				while (!primeList.isEmpty() && i < Math.floor((double) nops / 2)) {
 					primes.add(primeList.remove(0));
 					i++;
 				}
@@ -194,8 +206,16 @@ public class Distributor {
 				opList.add(op);
 			}
 			for (Ops op : opList) {
-				op.join(5000);
-				Results res = op.getRes();
+				try {
+					op.join();
+				} catch (Exception e) {
+					throw new Exception("3", e);
+				}
+				System.err.println("ping3");
+				res = op.getRes();
+				System.err.println(res.getIsSuccess());
+				System.err.println(res.getPells());
+				System.err.println(res.getPrimes());
 				if (res.getIsSuccess()) {
 					//step4 Add the result to the sum
 					sum += res.getResult() % 4000;
@@ -206,6 +226,7 @@ public class Distributor {
 				}
 			}
 		}
+		System.err.println("ping4");
 		//step5 verifiy that the file is read fully and that all the sums have been added...
 		System.out.println(sum);
 	}
@@ -218,7 +239,7 @@ public class Distributor {
 		int sum = 0;
 		ArrayList<Ops[]> opList = new ArrayList<Ops[]>();
 
-		while (!pellList.isEmpty() && !primeList.isEmpty()) {
+		while (!pellList.isEmpty() || !primeList.isEmpty()) {
 			listAvailableServers();
 			if (stubs.size() < 3) {
 				throw new Exception("Error: not enough compute server.");

@@ -16,10 +16,10 @@ public class ComputeServer implements ComputeServerInterface {
 	private int capacity;
 
 	public static void main(String[] args) {
-		if (args.length == 0 && args[0].compareTo("help") != 0) {
+		if (args.length == 0) {
 			ComputeServer server = new ComputeServer(1, 100);
 			server.run();
-		} else if (args.length == 1) {
+		} else if (args.length == 1 && args[0].compareTo("help") != 0){
 			int capacity = Integer.parseInt(args[0]);
 			ComputeServer server = new ComputeServer(capacity, 100);
 			server.run();
@@ -50,11 +50,11 @@ public class ComputeServer implements ComputeServerInterface {
 		}
 
 		try {
-			ComputeServerInterface stub = (ComputeServerInterface) UnicastRemoteObject.exportObject(this, 0);
+			ComputeServerInterface stub = (ComputeServerInterface) UnicastRemoteObject.exportObject(this, 5004);
 
-			Registry registry = LocateRegistry.getRegistry();
-			registry.rebind("ComputeServeur04", stub);
-			System.out.println("Distributor ready.");
+			Registry registry = LocateRegistry.getRegistry(5040);
+			registry.rebind("ComputeServer04", stub);
+			System.out.println("Compute server ready.");
 		} catch (ConnectException e) {
 			System.err.println("Impossible de se connecter au registre RMI. Est-ce que rmiregistry est lancé ?");
 			System.err.println();

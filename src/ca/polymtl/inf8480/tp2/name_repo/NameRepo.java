@@ -46,10 +46,10 @@ public class NameRepo implements NameRepoInterface {
         }
 
         try {
-            NameRepoInterface stub = (NameRepoInterface) UnicastRemoteObject.exportObject(this, 0);
+            NameRepoInterface stub = (NameRepoInterface) UnicastRemoteObject.exportObject(this, 5043);
 
-            Registry registry = LocateRegistry.getRegistry();
-            registry.rebind("NameReop04", stub);
+            Registry registry = LocateRegistry.getRegistry(5044);
+            registry.rebind("NameRepo04", stub);
             System.out.println("Server ready.");
         } catch (ConnectException e) {
             System.err.println("Impossible de se connecter au registre RMI. Est-ce que rmiregistry est lancé ?");
@@ -64,7 +64,7 @@ public class NameRepo implements NameRepoInterface {
         ComputeServerInterface stub = null;
 
         try {
-            Registry registry = LocateRegistry.getRegistry(hostname);
+            Registry registry = LocateRegistry.getRegistry(hostname, 5040);
             stub = (ComputeServerInterface) registry.lookup("ComputeServer04");
         } catch (NotBoundException e) {
             System.out.println("Erreur: Le nom '" + e.getMessage() + "' n'est pas défini dans le registre.");
@@ -78,24 +78,23 @@ public class NameRepo implements NameRepoInterface {
 
     private void checkServers() {
         Path path = Paths.get("all_server_names");
+        ArrayList<String> available = new ArrayList<String>();
+        List<String> servers = new ArrayList<String>();
         try {
-            ArrayList<String> available = new ArrayList<String>();
-            List<String> servers = Files.readAllLines(path);
-            for (String s : servers) {
-                // Test connexion serveur
-                ComputeServerInterface stub = loadServerStub(s);
-                try {
-                    stub.myLookup();
-                    available.add(s);
-                } catch (RemoteException e) {
-                } catch (Exception e) {
-                    System.err.println("Error " + s + ": " + e.getMessage());
-                }
-            }
-            availableServers = available;
+            servers = Files.readAllLines(path);
         } catch (Exception e) {
-            System.out.println("Erreur: " + e.getMessage());
+            System.out.println("Erreure: " + e.getMessage());
         }
+        for (String s : servers) {
+			try {
+				System.out.println(s);
+				// Test connexion serveur
+				ComputeServerInterface stub = loadServerStub(s);
+				stub.myLookup();
+				available.add(s);
+			} catch (Exception e) {}
+		}
+		availableServers = available;
     }
 
     private void loadUsers() {
